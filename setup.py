@@ -109,7 +109,7 @@ def main(argv):
                 "build",
                 "twine",
                 "stable_baselines3",
-                "pynvml",
+                "nvidia-ml-py",
                 "pytest-xdist[psutil]",
                 "pytest-forked",
             ],
