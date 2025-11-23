@@ -46,13 +46,15 @@ def main():
     )
 
     record_dir = args.record_dir
+    # Store reference to base environment before wrapping for attribute access
+    base_env = env.unwrapped if hasattr(env, 'unwrapped') else env
     if record_dir:
         record_dir = record_dir.format(env_id=args.env_id)
         env = RecordEpisode(env, record_dir, render_mode=args.render_mode)
 
     print("Observation space", env.observation_space)
     print("Action space", env.action_space)
-    print("Control mode", env.control_mode)
+    print("Control mode", base_env.control_mode)
     print("Reward mode", env.reward_mode)
 
     obs, _ = env.reset()
@@ -80,14 +82,14 @@ def main():
             return
         while True:
             env.render_human()
-            sapien_viewer = env.viewer
+            sapien_viewer = base_env.viewer
             if sapien_viewer.window.key_down("0"):
                 break
 
     # Embodiment
-    has_base = "base" in env.agent.controller.configs
-    num_arms = sum("arm" in x for x in env.agent.controller.configs)
-    has_gripper = any("gripper" in x for x in env.agent.controller.configs)
+    has_base = "base" in base_env.agent.controller.configs
+    num_arms = sum("arm" in x for x in base_env.agent.controller.configs)
+    has_gripper = any("gripper" in x for x in base_env.agent.controller.configs)
     gripper_action = 1
     EE_ACTION = 0.1
 
@@ -204,7 +206,7 @@ def main():
 
         # Visualize observation
         if key == "v":
-            if "pointcloud" in env.obs_mode:
+            if "pointcloud" in base_env.obs_mode:
                 import trimesh
 
                 xyzw = obs["pointcloud"]["xyzw"]
@@ -222,7 +224,7 @@ def main():
             base=base_action, arm=ee_action, body=body_action, gripper=gripper_action
         )
         action_dict = common.to_tensor(action_dict)
-        action = env.agent.controller.from_action_dict(action_dict)
+        action = base_env.agent.controller.from_action_dict(action_dict)
 
         obs, reward, terminated, truncated, info = env.step(action)
         print("reward", reward)

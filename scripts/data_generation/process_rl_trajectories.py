@@ -149,7 +149,7 @@ def main():
                         out_file[traj_id]["env_states"]
                     )
                     for step in range(new_episode["elapsed_steps"]):
-                        env.set_state_dict(env_states[step])
+                        env.unwrapped.set_state_dict(env_states[step])
                         imgs.append(env.render_rgb_array().cpu().numpy()[0])
                     env.close()
                     images_to_video(
